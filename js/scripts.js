@@ -90,30 +90,132 @@ const questions = [
     oldButtons.forEach(function(btn){
         btn.remove()
     })
-
     //Alterar o texto da pergunta
-    const questionText = question.querySelector('#question-text')
-    const questionNumber = question.querySelector('#question-number')
+    const questionText = question.querySelector("#question-text")
+    const questionNumber = question.querySelector("#question-number")
 
-    questionText.textContent =  questions[i].question
+    questionText.textContent = questions[i].question
     questionNumber.textContent = i + 1
 
     //Insere as alternativas
     questions[i].answers.forEach(function(answer, i){
-
         // Cria o template do botão do quizz
         const answerTemplate = document.querySelector(".answer-template").cloneNode(true)
-
+        
         const letterBtn = answerTemplate.querySelector('.btn-letter')
         const answerText = answerTemplate.querySelector('.question-answer')
         
         letterBtn.textContent = letters[i]
         answerText.textContent = answer['answer']
+        answerTemplate.setAttribute('correct-answer', answer['correct'])
 
-        console.log(answerTemplate)
+        // Remover hide e template class
+        answerTemplate.classList.remove("hide")
+        answerTemplate.classList.remove("answer-template")
+
+        // Inserir a alternativa na tela
+        answersBox.appendChild(answerTemplate)
+
+        // Inserir um evento de click no botão
+        answerTemplate.addEventListener("click", function(){
+          checkAnswer(this)
+        })
+    })
+    // Incrementer o número da questão
+    actualQuestion++
+  }
+
+  //Verificando resposta do usuário
+  function checkAnswer(btn){
+      
+    //selecionar todos os botões
+    const buttons = answersBox.querySelectorAll('button')
+
+    //verificar se a resposta é a certa e adiciona classe nos botões
+    buttons.forEach(function(button) {
+
+      if(button.getAttribute('correct-answer') === 'true') {
+        
+        button.classList.add('correct-answer')
+
+        //checa se acertou a pergunta
+        if(btn === button){
+          //incremento dos pontos
+          points++
+        }
+      } else {
+        button.classList.add('wrong-answer')
+
+      }
+
     })
 
+    //Exibir proxima pergunta
+    nextQuestion()
+
+    //Exibe proxima pergunta no quizz
+    function nextQuestion(){
+
+      // timer para usuário ver as respostas
+      setTimeout(function(){
+
+        //verifica se ainda há perguntas
+        if(actualQuestion >= questions.length){
+          //apresenta a msg de sucesso
+          showSuccessMessage()
+          return
+        }
+
+        createQuestion(actualQuestion)
+
+      }, 1500)
+
+    }
+
   }
+
+  //Exibe a tela final
+  function showSuccessMessage(){
+
+    hideOrShowQuizz()
+
+    //trocar dados da tela de sucesso
+
+    //calcular score
+    const score = ((points / questions.length) * 100).toFixed(2)
+
+    const displayScore = document.querySelector('#display-score span')
+
+    displayScore.textContent = score.toString()
+
+    //alterar o número de perguntas corretas
+    
+    const correctAnswers = document.querySelector('#correct-answers')
+    correctAnswers.textContent = points
+
+    //Alterar total de perguntas
+    const totalQuestions = document.querySelector('#questions-qty')
+    totalQuestions.textContent = questions.length
+
+  }
+
+  function hideOrShowQuizz(){
+    quizzContainer.classList.toggle('hide')
+    scoreContainer.classList.toggle('hide')
+  }
+
+   //Reiniciar Quizz
+    const restartBtn = document.querySelector('#restart')
+
+    restartBtn.addEventListener('click', function(){
+
+      // zerar o jogo
+      actualQuestion = 0
+      points = 0
+      hideOrShowQuizz()
+      init()
+
+    })
 
   //Inicialização do quizz
   init()
